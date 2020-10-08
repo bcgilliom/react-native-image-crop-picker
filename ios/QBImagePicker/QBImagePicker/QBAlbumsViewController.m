@@ -8,6 +8,7 @@
 
 #import "QBAlbumsViewController.h"
 #import <Photos/Photos.h>
+#import <PhotosUI/PhotosUI.h>
 
 // Views
 #import "QBAlbumCell.h"
@@ -69,6 +70,16 @@ static CGSize CGSizeScale(CGSize size, CGFloat scale) {
         [self.navigationItem setRightBarButtonItem:nil animated:NO];
     }
     
+    if (@available(iOS 14, *)) {
+        [PHPhotoLibrary requestAuthorizationForAccessLevel:PHAccessLevelReadWrite handler:^(PHAuthorizationStatus status) {
+            if (status != PHAuthorizationStatusLimited && self.tableView.tableHeaderView != nil) {
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    self.tableView.tableHeaderView = nil;
+                });
+            }
+        }];
+    }
+    
     [self updateControlState];
     [self updateSelectionInfo];
 }
@@ -107,6 +118,13 @@ static CGSize CGSizeScale(CGSize size, CGFloat scale) {
     }
 }
 
+- (IBAction)manage:(id)sender {
+    if (@available(iOS 14, *)) {
+        [[PHPhotoLibrary sharedPhotoLibrary] presentLimitedLibraryPickerFromViewController:self];
+    } else {
+        // Fallback on earlier versions
+    }
+}
 
 #pragma mark - Toolbar
 
